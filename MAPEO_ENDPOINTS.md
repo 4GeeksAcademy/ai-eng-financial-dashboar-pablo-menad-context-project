@@ -1,7 +1,16 @@
 # Mapeo de Endpoints - Financial Metrics API
 
+**Última actualización:** 2026-11-18  
+**Cambios:** 
+- ✅ Confirmado: Parámetro `category` en `/api/metrics/summary` funciona correctamente
+- ✅ Confirmado: Parámetro `business_type` en `/api/metrics` disponible
+- ✅ Deprecado: Endpoints `/api/metrics/b2b` y `/api/metrics/b2c` removidos (usar `?business_type=X`)
+- ✅ Aclarado: Propósito de `/api/metrics/facets` es data availability
+
 ## Visión General
-Backend basado en **FastAPI** (Puerto 8000) con 6 endpoints disponibles organizados en 3 funcionalidades principales.
+Backend basado en **FastAPI** (Puerto 8000) con 6 endpoints principales organizados en 3 funcionalidades principales.
+
+**Referencia de tipos:** Ver [API_TYPES.md](./frontend/specs/API_TYPES.md) para especificación formal de todos los tipos de entrada/salida.
 
 ---
 
@@ -195,7 +204,11 @@ curl "http://localhost:8000/api/metrics/alerts?group_by=week&start_date=2025-01-
 ```
 
 ### 📋 GET `/api/metrics/facets`
-**Propósito:** Obtener todos los valores posibles para filtros.
+**Propósito:** Obtener información de disponibilidad de datos: rango de fechas y presencia de datos por tipo de negocio.
+
+**Uso Recomendado:** El frontend puede usarlo para:
+- Validar rango de fechas disponibles (rellenar date pickers)
+- Detectar si existen datos B2B/B2C antes de mostrar filtros asociados
 
 #### Parámetros Query:
 Ninguno
@@ -211,6 +224,12 @@ Ninguno
 }
 ```
 
+#### Interpretación:
+- `operation_types`: Lista de tipos de operación presentes en los datos (siempre ["income", "outcome"])
+- `business_types`: Lista de tipos de negocio presentes (ej: si solo hay B2B, retorna ["B2B"])
+- `categories`: Categorías disponibles en los datos
+- `min_date` / `max_date`: Rango de fechas de los movimientos
+
 ### 📊 GET `/api/metrics`
 **Propósito:** Obtener datos brutos de movimientos financieros.
 
@@ -221,6 +240,7 @@ Ninguno
 | `end_date` | `date (YYYY-MM-DD)` | `null` | Fecha final (opcional) |
 | `category` | `string` | `null` | Filtrar por categoría |
 | `operation_type` | `"income" \| "outcome"` | `null` | Filtrar por tipo de operación |
+| `business_type` | `"B2B" \| "B2C"` | `null` | Filtrar por tipo de negocio |
 
 #### Respuesta Exitosa (200 OK):
 ```json
